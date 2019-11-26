@@ -1,7 +1,11 @@
 extends Node2D
 
 # TODO: Remove GAME_ID constant, its just to try things :)
-var GAME_ID = 0
+
+var GAME_ID = 000
+var SERVER_IP = "cluster.sergio.link"
+var SERVER_PORT = 18000
+
 const MAIN_SCENARIO_URI = "res://MainScenario.tscn"
 
 var scenario = null
@@ -19,6 +23,8 @@ var tcp_client = null
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	randomize()
+	GAME_ID = randi()%990 + 9
 	scenario = Scenario.instance()
 	add_child(scenario)
 	
@@ -33,7 +39,7 @@ func _tcp_connect():
 	var tcp_client = StreamPeerTCP.new()
 	if !tcp_client.is_connected_to_host():
 		print("Connecting")
-		tcp_client.connect_to_host("127.0.0.1", 18000)
+		tcp_client.connect_to_host(SERVER_IP, SERVER_PORT)
 	return tcp_client
 
 	
@@ -74,6 +80,7 @@ func _process(delta):
 	_read_tcp_messages(tcp_client)
 	
 func _write_tcp_messages(tcp_client):
+	print(GAME_ID)
 	var message = str(GAME_ID) + "," + str(players[0].position.x) \
 						 + "," + str(players[0].position.y)
 	if tcp_client.is_connected_to_host():
@@ -106,7 +113,7 @@ func _read_tcp_messages(tcp_client):
 	if should_spawn_netplayer:
 		network_players.append(spawn_network_player(int(msg_player_id), int(msg_player_x), int(msg_player_y)))
 		
-	print(msg_player_x)
+	#print(msg_player_x)
 	for net_player in network_players:
 		if net_player.id == player_id:
 			net_player.set_physics_process(false)

@@ -1,6 +1,6 @@
 require 'socket'
 
-players = [{x: 100, y: 100}, {x: 600, y: 100}]
+players = Hash.new
 
 
 server = TCPServer.new 18000
@@ -12,20 +12,24 @@ loop do
       data = client.recv(1000)
       data = data.delete(' ')
       recv_data = data.split(',')
-      speaking_with = recv_data[0]
+      speaking_with = recv_data[0].to_i
       coords_x = recv_data[1]
       coords_y = recv_data[2]
-
-      if data.length > 6 then
-        players[speaking_with.to_i][:x] = coords_x.to_i
-        players[speaking_with.to_i][:y] = coords_y.to_i
+      if speaking_with != 0 and players[speaking_with] == nil then
+        players[speaking_with] = { x: 0, y: 0 }
       end
 
-      players.each_with_index do |player, i|
-        message = format('%03d%04d%04d', i, player[:x], player[:y])
+      if speaking_with != 0 then
+        players[speaking_with][:x] = coords_x.to_i
+        players[speaking_with][:y] = coords_y.to_i
+      end
+
+      players.each do |key, player|
+        message = format('%03d%04d%04d', key, player[:x], player[:y])
         client.puts message << 0
+        puts message
       end
-
+      puts "polla"
       sleep 0.01
     end
   end
