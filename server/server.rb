@@ -29,7 +29,6 @@ loop do
         client.puts message << 0
         puts message
       end
-      puts "polla"
       sleep 0.01
     end
   end
