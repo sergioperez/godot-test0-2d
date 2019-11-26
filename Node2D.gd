@@ -26,8 +26,6 @@ func _ready():
 	players.append(player)
 	get_node("LifeCount").text = "%s" % player.life
 	
-	var network_player = spawn_network_player(600, 100)
-	network_players.append(network_player)
 	tcp_client = _tcp_connect()
 	#_read_tcp_messages(tcp_client)
 
@@ -48,24 +46,26 @@ func spawn_new_player(x, y):
 	return player
 	#player.connect("shoot", self, "player_shoot")
 	
-func spawn_network_player(x, y):
+func spawn_network_player(id, x, y):
+	print("Spawning network player " + str(id) + " at " + str(x) + ":" + str(y))
 	var network_player = Player.instance()
+	network_player.id = id
 	network_player.position.x = x
 	network_player.position.y = y
 	add_child(network_player)
 	return network_player
 
-func player_shoot(player, shoot_direction):
-	var Bullet = preload("res://Bullet.tscn")
-	var bullet = Bullet.instance()
-	bullets.append(bullet)
-	bullet.position.x = player.position.x
-	bullet.position.y = player.position.y
-	bullet.speed.x = 10
-
-	add_child(bullet)
-	print(shoot_direction)
-	print("ola")
+#func player_shoot(player, shoot_direction):
+#	var Bullet = preload("res://Bullet.tscn")
+#	var bullet = Bullet.instance()
+#	bullets.append(bullet)
+#	bullet.position.x = player.position.x
+#	bullet.position.y = player.position.y
+#	bullet.speed.x = 10
+#
+#	add_child(bullet)
+#	print(shoot_direction)
+#	print("ola")
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
@@ -79,11 +79,39 @@ func _write_tcp_messages(tcp_client):
 	if tcp_client.is_connected_to_host():
 		tcp_client.put_string(message)
 	
+var received_message = null
+var msg_player_id = null
+var player_id = null
+var msg_player_x = null
+var msg_player_y = null
+var should_spawn_netplayer = true
 func _read_tcp_messages(tcp_client):
 	#if tcp_client.is_connected_to_host():
 		#print(str(tcp_client.get_string()))
-	print(tcp_client.get_string(5))
-	pass
+	#print("hola")
+	should_spawn_netplayer = true
+	received_message = tcp_client.get_string(13)
+	msg_player_id = received_message.substr(0, 3)
+	msg_player_x = received_message.substr(3, 4)
+	msg_player_y = received_message.substr(7, 4)
+	player_id = int(msg_player_id)
+	
+	if player_id == GAME_ID:
+		should_spawn_netplayer = false
+		
+	for net_player in network_players:
+		if net_player.id == player_id:
+			should_spawn_netplayer = false
+
+	if should_spawn_netplayer:
+		network_players.append(spawn_network_player(int(msg_player_id), int(msg_player_x), int(msg_player_y)))
+		
+	print(msg_player_x)
+	for net_player in network_players:
+		if net_player.id == player_id:
+			net_player.set_physics_process(false)
+			net_player.position.x = int(msg_player_x)
+			net_player.position.y = int(msg_player_y)
 
 func check_death_area():
 	var death_area_bodies = scenario.get_node("DeathArea").get_overlapping_bodies()

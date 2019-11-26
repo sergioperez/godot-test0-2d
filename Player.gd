@@ -2,7 +2,7 @@ extends KinematicBody2D
 
 signal shoot
 
-var player_id = 8
+var id = 8
 var info_text_node = "hola"
 const MAX_JUMPS = 2
 const GRAVITY = 10

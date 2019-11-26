@@ -6,12 +6,9 @@
 [sub_resource type="RectangleShape2D" id=1]
 extents = Vector2( 29.4708, 30 )
 
-[node name="NetworkPlayer" type="KinematicBody2D"]
+[node name="NetworkPlayer" type="StaticBody2D"]
 position = Vector2( 96, 210 )
 script = ExtResource( 1 )
-__meta__ = {
-"_edit_group_": true
-}
 
 [node name="Sprite" type="Sprite" parent="."]
 position = Vector2( -7.62939e-06, 0 )
