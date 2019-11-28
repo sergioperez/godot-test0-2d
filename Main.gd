@@ -3,7 +3,7 @@ extends Node2D
 # TODO: Remove GAME_ID constant, its just to try things :)
 
 var GAME_ID = 000
-var SERVER_IP = "cluster.sergio.link"
+var SERVER_IP = "127.0.0.1"
 var SERVER_PORT = 18000
 
 const MAIN_SCENARIO_URI = "res://MainScenario.tscn"
@@ -80,11 +80,13 @@ func _process(delta):
 	_read_tcp_messages(tcp_client)
 	
 func _write_tcp_messages(tcp_client):
-	print(GAME_ID)
-	var message = str(GAME_ID) + "," + str(players[0].position.x) \
+	var message = "," + str(GAME_ID) + "," + str(players[0].position.x) \
 						 + "," + str(players[0].position.y)
 	if tcp_client.is_connected_to_host():
+		print("Sending %s\n" % message)
 		tcp_client.put_string(message)
+	else:
+		print("THIS IS NOT CONNECTED BRO")
 	
 var received_message = null
 var msg_player_id = null
@@ -96,6 +98,9 @@ func _read_tcp_messages(tcp_client):
 	#if tcp_client.is_connected_to_host():
 		#print(str(tcp_client.get_string()))
 	#print("hola")
+	if !tcp_client.is_connected_to_host():
+		pass
+		
 	should_spawn_netplayer = true
 	received_message = tcp_client.get_string(13)
 	msg_player_id = received_message.substr(0, 3)
